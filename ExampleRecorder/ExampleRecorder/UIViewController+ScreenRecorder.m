@@ -10,6 +10,10 @@
 #import "ASScreenRecorder.h"
 #import <AudioToolbox/AudioToolbox.h>
 
+@interface UIViewController ()<ASScreenRecorderDelegate>
+
+@end
+
 @implementation UIViewController (ScreenRecorder)
 
 - (void)prepareScreenRecorder;
@@ -23,6 +27,7 @@
 - (void)recorderGesture:(UIGestureRecognizer *)recognizer
 {
     ASScreenRecorder *recorder = [ASScreenRecorder sharedInstance];
+    recorder.delegate = self;
     
     if (recorder.isRecording) {
         [recorder stopRecordingWithCompletion:^{

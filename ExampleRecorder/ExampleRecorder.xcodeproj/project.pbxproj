@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0D3C1AEA26C2701C00674BC1 /* FIFOMap.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D3C1AE826C2701C00674BC1 /* FIFOMap.m */; };
+		0D3C1AED26C28A8E00674BC1 /* NSData+MD5.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D3C1AEC26C28A8E00674BC1 /* NSData+MD5.m */; };
+		0D82523126C3D8C0001D3085 /* CIImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D82523026C3D8C0001D3085 /* CIImageView.swift */; };
 		E7C0F8E71907F1C6001B7230 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7C0F8E61907F1C6001B7230 /* Foundation.framework */; };
 		E7C0F8E91907F1C6001B7230 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7C0F8E81907F1C6001B7230 /* CoreGraphics.framework */; };
 		E7C0F8EB1907F1C6001B7230 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7C0F8EA1907F1C6001B7230 /* UIKit.framework */; };
@@ -35,6 +38,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0D3C1AE826C2701C00674BC1 /* FIFOMap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FIFOMap.m; path = ../ASScreenRecorder/FIFOMap.m; sourceTree = "<group>"; };
+		0D3C1AE926C2701C00674BC1 /* FIFOMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FIFOMap.h; path = ../ASScreenRecorder/FIFOMap.h; sourceTree = "<group>"; };
+		0D3C1AEB26C28A8E00674BC1 /* NSData+MD5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+MD5.h"; path = "../ASScreenRecorder/NSData+MD5.h"; sourceTree = "<group>"; };
+		0D3C1AEC26C28A8E00674BC1 /* NSData+MD5.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+MD5.m"; path = "../ASScreenRecorder/NSData+MD5.m"; sourceTree = "<group>"; };
+		0D82522F26C3D8C0001D3085 /* ExampleRecorder-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ExampleRecorder-Bridging-Header.h"; sourceTree = "<group>"; };
+		0D82523026C3D8C0001D3085 /* CIImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CIImageView.swift; path = ../ASScreenRecorder/CIImageView.swift; sourceTree = "<group>"; };
 		E7C0F8E31907F1C6001B7230 /* ExampleRecorder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExampleRecorder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7C0F8E61907F1C6001B7230 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		E7C0F8E81907F1C6001B7230 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -145,8 +154,14 @@
 		E7C0F92A190808C5001B7230 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
+				0D82523026C3D8C0001D3085 /* CIImageView.swift */,
+				0D3C1AEB26C28A8E00674BC1 /* NSData+MD5.h */,
+				0D3C1AEC26C28A8E00674BC1 /* NSData+MD5.m */,
+				0D3C1AE926C2701C00674BC1 /* FIFOMap.h */,
+				0D3C1AE826C2701C00674BC1 /* FIFOMap.m */,
 				E7C0F92B190808D2001B7230 /* ASScreenRecorder.h */,
 				E7C0F92C190808D2001B7230 /* ASScreenRecorder.m */,
+				0D82522F26C3D8C0001D3085 /* ExampleRecorder-Bridging-Header.h */,
 			);
 			name = Vendor;
 			sourceTree = "<group>";
@@ -198,6 +213,10 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Alan Skipp";
 				TargetAttributes = {
+					E7C0F8E21907F1C6001B7230 = {
+						DevelopmentTeam = UCLVZHNPQ4;
+						LastSwiftMigration = 1250;
+					};
 					E7C0F9061907F1C7001B7230 = {
 						TestTargetID = E7C0F8E21907F1C6001B7230;
 					};
@@ -208,6 +227,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -250,7 +270,10 @@
 				E7C0F8F71907F1C6001B7230 /* AppDelegate.m in Sources */,
 				E7C0F92D190808D2001B7230 /* ASScreenRecorder.m in Sources */,
 				E7C0F8FD1907F1C6001B7230 /* MasterViewController.m in Sources */,
+				0D3C1AED26C28A8E00674BC1 /* NSData+MD5.m in Sources */,
 				E7C0F8F31907F1C6001B7230 /* main.m in Sources */,
+				0D3C1AEA26C2701C00674BC1 /* FIFOMap.m in Sources */,
+				0D82523126C3D8C0001D3085 /* CIImageView.swift in Sources */,
 				E7C0F93019081312001B7230 /* UIViewController+ScreenRecorder.m in Sources */,
 				E7C0F9001907F1C6001B7230 /* DetailViewController.m in Sources */,
 			);
@@ -325,7 +348,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 			};
@@ -357,7 +380,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -368,10 +391,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ENABLE_MODULES = YES;
+				DEVELOPMENT_TEAM = UCLVZHNPQ4;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ExampleRecorder/ExampleRecorder-Prefix.pch";
 				INFOPLIST_FILE = "ExampleRecorder/ExampleRecorder-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.yz.ibuildapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ExampleRecorder-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -381,10 +411,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ENABLE_MODULES = YES;
+				DEVELOPMENT_TEAM = UCLVZHNPQ4;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ExampleRecorder/ExampleRecorder-Prefix.pch";
 				INFOPLIST_FILE = "ExampleRecorder/ExampleRecorder-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.yz.ibuildapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ExampleRecorder-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -392,6 +428,7 @@
 		E7C0F91C1907F1C7001B7230 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ExampleRecorder.app/ExampleRecorder";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
@@ -414,6 +451,7 @@
 		E7C0F91D1907F1C7001B7230 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ExampleRecorder.app/ExampleRecorder";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
@@ -448,6 +486,7 @@
 				E7C0F91A1907F1C7001B7230 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		E7C0F91B1907F1C7001B7230 /* Build configuration list for PBXNativeTarget "ExampleRecorderTests" */ = {
 			isa = XCConfigurationList;
@@ -456,6 +495,7 @@
 				E7C0F91D1907F1C7001B7230 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

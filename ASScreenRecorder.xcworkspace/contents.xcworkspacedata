@@ -8,7 +8,28 @@
          location = "group:ASScreenRecorder.h">
       </FileRef>
       <FileRef
+         location = "group:FIFOMap.h">
+      </FileRef>
+      <FileRef
+         location = "group:FIFOMap.m">
+      </FileRef>
+      <FileRef
+         location = "group:NSData+MD5.h">
+      </FileRef>
+      <FileRef
          location = "group:ASScreenRecorder.m">
+      </FileRef>
+      <FileRef
+         location = "group:NSData+MD5.m">
+      </FileRef>
+      <FileRef
+         location = "group:ASImageGenerate.h">
+      </FileRef>
+      <FileRef
+         location = "group:ASImageGenerate.m">
+      </FileRef>
+      <FileRef
+         location = "group:CIImageView.swift">
       </FileRef>
    </Group>
    <FileRef

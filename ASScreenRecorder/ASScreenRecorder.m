@@ -11,6 +11,9 @@
 #import <QuartzCore/QuartzCore.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
+#import "FIFOMap.h"
+#import "NSData+MD5.h"
+
 @interface ASScreenRecorder()
 @property (strong, nonatomic) AVAssetWriter *videoWriter;
 @property (strong, nonatomic) AVAssetWriterInput *videoWriterInput;
@@ -18,8 +21,15 @@
 @property (strong, nonatomic) CADisplayLink *displayLink;
 @property (strong, nonatomic) NSDictionary *outputBufferPoolAuxAttributes;
 @property (nonatomic) CFTimeInterval firstTimeStamp;
+@property (nonatomic) CFTimeInterval lastTimeStamp;
 @property (nonatomic) BOOL isRecording;
+
+@property (strong, nonatomic) FIFOMap *filterMap;
+
+@property (nonatomic, strong) NSMutableData *imageData;
+
 @end
+
 
 @implementation ASScreenRecorder
 {
@@ -33,6 +43,13 @@
     
     CGColorSpaceRef _rgbColorSpace;
     CVPixelBufferPoolRef _outputBufferPool;
+    
+    NSData *_lastRowData;
+    size_t _desRowHeight;
+    
+    NSString *_cacheDir;
+    NSUInteger _imageIndex;
+    
 }
 
 #pragma mark - initializers
@@ -63,6 +80,16 @@
         dispatch_set_target_queue(_render_queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0));
         _frameRenderingSemaphore = dispatch_semaphore_create(1);
         _pixelAppendSemaphore = dispatch_semaphore_create(1);
+        
+        _filterMap = [[FIFOMap alloc] initWithMaxSize:256];
+        
+        _filterMap.outputBlock = ^(id  _Nonnull data) {
+//            NSLog(@"image data:%@",data);
+            if([self.delegate respondsToSelector:@selector(writeFilterImage:)]){
+                [self.delegate writeFilterImage:data];
+            }
+        };
+         
     }
     return self;
 }
@@ -99,7 +126,12 @@
 
 -(void)setUpWriter
 {
+    _desRowHeight = _viewSize.height * _scale;
+    _imageData = [[NSMutableData alloc] init];
     _rgbColorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    _imageIndex = 0;
+    _cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
     
     NSDictionary *bufferAttributes = @{(id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA),
                                        (id)kCVPixelBufferCGBitmapContextCompatibilityKey : @YES,
@@ -119,12 +151,17 @@
     NSParameterAssert(_videoWriter);
     
     NSInteger pixelNumber = _viewSize.width * _viewSize.height * _scale;
-    NSDictionary* videoCompression = @{AVVideoAverageBitRateKey: @(pixelNumber * 11.4)};
+    NSDictionary* videoCompression = @{
+        AVVideoAverageBitRateKey: @(pixelNumber * 11.4),
+        AVVideoMaxKeyFrameIntervalKey:@(30),
+        AVVideoExpectedSourceFrameRateKey:@(30)
+    };
     
     NSDictionary* videoSettings = @{AVVideoCodecKey: AVVideoCodecH264,
                                     AVVideoWidthKey: [NSNumber numberWithInt:_viewSize.width*_scale],
                                     AVVideoHeightKey: [NSNumber numberWithInt:_viewSize.height*_scale],
-                                    AVVideoCompressionPropertiesKey: videoCompression};
+                                    AVVideoCompressionPropertiesKey: videoCompression,
+    };
     
     _videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
     NSParameterAssert(_videoWriterInput);
@@ -234,13 +271,18 @@
         if (!self.firstTimeStamp) {
             self.firstTimeStamp = _displayLink.timestamp;
         }
+        
+        if (!self.lastTimeStamp){
+            self.lastTimeStamp = _displayLink.timestamp;
+        }
+        
         CFTimeInterval elapsed = (_displayLink.timestamp - self.firstTimeStamp);
         CMTime time = CMTimeMakeWithSeconds(elapsed, 1000);
         
         CVPixelBufferRef pixelBuffer = NULL;
         CGContextRef bitmapContext = [self createPixelBufferAndBitmapContext:&pixelBuffer];
         
-        if (self.delegate) {
+        if (self.delegate && [self.delegate respondsToSelector:@selector(writeBackgroundFrameInContext:)]) {
             [self.delegate writeBackgroundFrameInContext:&bitmapContext];
         }
         // draw each window into the context (other windows include UIKeyboard, UIAlert)
@@ -259,10 +301,12 @@
         // if it’s not ready, release pixelBuffer and bitmapContext
         if (dispatch_semaphore_wait(_pixelAppendSemaphore, DISPATCH_TIME_NOW) == 0) {
             dispatch_async(_append_pixelBuffer_queue, ^{
+                //NSLog(@">>>>>%@",pixelBuffer);
                 BOOL success = [_avAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:time];
                 if (!success) {
                     NSLog(@"Warning: Unable to write buffer to video");
                 }
+                
                 CGContextRelease(bitmapContext);
                 CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
                 CVPixelBufferRelease(pixelBuffer);
@@ -285,17 +329,110 @@
     CVPixelBufferLockBaseAddress(*pixelBuffer, 0);
     
     CGContextRef bitmapContext = NULL;
+    
+    // 640 1136
+    void *yBaseAddress = CVPixelBufferGetBaseAddressOfPlane(*pixelBuffer, 0);
+    size_t yBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(*pixelBuffer, 0);
+    size_t width = CVPixelBufferGetWidth(*pixelBuffer);
+    size_t height = CVPixelBufferGetHeight(*pixelBuffer);
+    
     bitmapContext = CGBitmapContextCreate(CVPixelBufferGetBaseAddress(*pixelBuffer),
-                                          CVPixelBufferGetWidth(*pixelBuffer),
-                                          CVPixelBufferGetHeight(*pixelBuffer),
+                                          width,
+                                          height,
                                           8, CVPixelBufferGetBytesPerRow(*pixelBuffer), _rgbColorSpace,
                                           kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst
                                           );
     CGContextScaleCTM(bitmapContext, _scale, _scale);
     CGAffineTransform flipVertical = CGAffineTransformMake(1, 0, 0, -1, 0, _viewSize.height);
     CGContextConcatCTM(bitmapContext, flipVertical);
+        
+    CFTimeInterval delta = self.lastTimeStamp = self.firstTimeStamp;
+    if (delta > 25){
+        
+        @autoreleasepool {
+            // 上一帧的最后一行数据
+            if (!_lastRowData){
+                _lastRowData = [self lastRowDataFromPixel:*pixelBuffer baseAddress:yBaseAddress bytesPerRow:yBytesPerRow width:width hegiht:height];
+                [_imageData appendData:[self dataFromPixel:*pixelBuffer baseAddress:yBaseAddress bytesPerRow:yBytesPerRow width:width hegiht:height]];
+            }else{
+                // FIX ME 倒序获取当前帧的行数据，跟上一帧的最后一行进行比较,找到最后相同的
+                size_t found = -1;
+                
+                //for (size_t i = height; i > 0; i--)
+                for (size_t i = 0; i < height; i ++)
+                {
+                    size_t offset = (i - 1) * yBytesPerRow;
+                    NSData *data = [self dataAt:yBaseAddress + offset length:yBytesPerRow];
+                    if ([data isEqualToData:_lastRowData]){
+                        found = i;
+                        break;
+                    }
+                }
+                
+                
+                // 将当前 found 后面的 data 拼接在前面的 _imageData 之后,同时对目标 image height ++
+                if (found != -1 && found != height)
+                {
+                    for (size_t i = found + 1; i <= height; i++)
+                    {
+                        size_t offset = (i - 1) * yBytesPerRow;
+                        NSData *data = [self dataAt:yBaseAddress + offset length:yBytesPerRow];
+                        [_imageData appendData:data];
+                        
+                        _desRowHeight ++;
+                    }
+                }
+                
+                if (_imageData){
+                    
+                    // TODD 截取 height 高度的写入文件为图片, 减小内存
+                    // 此处直接抛弃,暂时不处理
+                    NSUInteger length = _imageData.length / yBytesPerRow;
+                    NSLog(@">>>length:%lu",(unsigned long)length);
+                    NSUInteger allow = height * 4;
+                    NSLog(@">>>allow:%lu",(unsigned long)allow);
+                    if (length > allow * 2){
+                        
+                        _desRowHeight = _desRowHeight - allow;
+                        _imageData = [[NSMutableData alloc] initWithData:[_imageData subdataWithRange:NSMakeRange((length - _desRowHeight) * yBytesPerRow, _desRowHeight * yBytesPerRow)]];
+                        NSLog(@">>>截取");
+                        NSLog(@">>>_desRowHeight:%zu",_desRowHeight);
+                        NSLog(@">>>_imageData:%lu",_imageData.length / yBytesPerRow);
+                    }
+                    
+                    CIImage *ciImage = [[CIImage alloc] initWithBitmapData:_imageData bytesPerRow:yBytesPerRow size:CGSizeMake(width, _desRowHeight) format:kCIFormatBGRA8 colorSpace:_rgbColorSpace];
+                    
+                    UIImage *image = [[UIImage alloc] initWithCIImage:ciImage];
+                    
+                    [self.delegate writeFilterImage:ciImage];
+                }
+            }
+            
+            _lastTimeStamp = _displayLink.timestamp;
+            _lastRowData = [self lastRowDataFromPixel:*pixelBuffer baseAddress:yBaseAddress bytesPerRow:yBytesPerRow width:width hegiht:height];
+        }
+    }
     
     return bitmapContext;
 }
 
+- (NSData *)dataAt:(void *)position length:(size_t)length
+{
+    NSData *data = [[NSData alloc] initWithBytes:position length:length];
+    return [data copy];
+}
+
+- (NSData *)lastRowDataFromPixel:(CVPixelBufferRef)buffer baseAddress:(void *)yBaseAddress bytesPerRow:(size_t)yBytesPerRow width:(size_t)width hegiht:(size_t)height
+{
+    size_t offset = (height - 1) * yBytesPerRow;
+    
+    return [self dataAt:yBaseAddress + offset length:yBytesPerRow];
+}
+
+
+- (NSData *)dataFromPixel:(CVPixelBufferRef)buffer baseAddress:(void *)yBaseAddress  bytesPerRow:(size_t)yBytesPerRow width:(size_t)width hegiht:(size_t)height
+{
+    size_t yLength = yBytesPerRow * height;
+    return [self dataAt:yBaseAddress length:yLength];
+}
 @end

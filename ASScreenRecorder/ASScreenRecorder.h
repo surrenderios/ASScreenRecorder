@@ -35,4 +35,5 @@ typedef void (^VideoCompletionBlock)(void);
 // use 'CGContextDrawImage' to draw your view into the provided CGContextRef
 @protocol ASScreenRecorderDelegate <NSObject>
 - (void)writeBackgroundFrameInContext:(CGContextRef*)contextRef;
+- (void)writeFilterImage:(id)data;
 @end
